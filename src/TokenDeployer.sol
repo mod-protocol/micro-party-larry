@@ -32,6 +32,7 @@ contract TokenDeployer is Ownable {
     uint96 public MIN_CONTRIBUTION = 1000000000000000;
     uint256 public LAUNCH_TOTAL_SUPPLY = 1e9; // 1 billion
     uint256 public LAUNCH_DISTRIBUTION_SUPPLY_BPS = 500; // 5%, rest goes to LP
+    uint256 public PARTY_DURATION = 900; // 15 minutes
 
     CrowdfundFactory public crowdfundFactory;
     ERC20LaunchCrowdfund public crowdfundImpl;
@@ -69,7 +70,7 @@ contract TokenDeployer is Ownable {
                     exchangeRate: 1000000000000000000,
                     fundingSplitBps: 0,
                     fundingSplitRecipient: payable(options.creator),
-                    duration: 900, // 15 minunutes
+                    duration: PARTY_DURATION, // 15 minunutes
                     gateKeeper: IGateKeeper(address(0)),
                     gateKeeperId: bytes12(0)
                 });
@@ -152,6 +153,11 @@ contract TokenDeployer is Ownable {
     function setPartyFactory(address _partyFactory) external onlyOwner {
         require(_partyFactory != address(0), "Cannot set to zero address");
         partyFactory = PartyFactory(_partyFactory);
+    }
+
+    function setPartyDuration(uint256 _partyDuration) external onlyOwner {
+        require(_partyDuration > 0, "Duration must be greater than 0");
+        PARTY_DURATION = _partyDuration;
     }
 }
 

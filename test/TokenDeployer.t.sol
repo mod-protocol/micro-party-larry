@@ -127,6 +127,16 @@ contract TokenDeployerTest is Test {
         deployer.setPartyFactory(address(0)); // Should fail
     }
 
+    function test_SetPartyDuration() public {
+        uint256 newDuration = 7 days;
+        deployer.setPartyDuration(newDuration);
+        assertEq(deployer.PARTY_DURATION(), newDuration);
+    }
+
+    function testFail_SetPartyDurationZero() public {
+        deployer.setPartyDuration(0); // Should fail
+    }
+
     function testFail_OnlyOwnerFunctions() public {
         vm.prank(address(0x8)); // Switch to non-owner address
 
@@ -138,5 +148,6 @@ contract TokenDeployerTest is Test {
         deployer.setLpFeeRecipient(address(1));
         deployer.setPartyImpl(payable(address(1)));
         deployer.setPartyFactory(address(1));
+        deployer.setPartyDuration(1);
     }
 }
