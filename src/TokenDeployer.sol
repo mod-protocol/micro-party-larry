@@ -32,7 +32,7 @@ contract TokenDeployer is Ownable {
     uint96 public MIN_CONTRIBUTION = 1000000000000000;
     uint256 public LAUNCH_TOTAL_SUPPLY = 1e9; // 1 billion
     uint256 public LAUNCH_DISTRIBUTION_SUPPLY_BPS = 500; // 5%, rest goes to LP
-    uint256 public PARTY_DURATION = 900; // 15 minutes
+    uint40 public PARTY_DURATION = 900; // 15 minutes
 
     CrowdfundFactory public crowdfundFactory;
     ERC20LaunchCrowdfund public crowdfundImpl;
@@ -57,23 +57,20 @@ contract TokenDeployer is Ownable {
     function deploy(
         ERC20LaunchOptions memory options
     ) public returns (ERC20LaunchCrowdfund) {
-        InitialETHCrowdfund.InitialETHCrowdfundOptions
-            memory crowdfundOpts = InitialETHCrowdfund
-                .InitialETHCrowdfundOptions({
-                    initialContributor: payable(address(0)),
-                    initialDelegate: payable(address(0)),
-                    minContribution: MIN_CONTRIBUTION,
-                    maxContribution: MAX_CONTRIBUTION,
-                    disableContributingForExistingCard: true,
-                    minTotalContributions: MIN_CONTRIBUTION,
-                    maxTotalContributions: MAX_CONTRIBUTION,
-                    exchangeRate: 1000000000000000000,
-                    fundingSplitBps: 0,
-                    fundingSplitRecipient: payable(options.creator),
-                    duration: PARTY_DURATION, // 15 minunutes
-                    gateKeeper: IGateKeeper(address(0)),
-                    gateKeeperId: bytes12(0)
-                });
+        InitialETHCrowdfund.InitialETHCrowdfundOptions memory crowdfundOpts;
+        crowdfundOpts.initialContributor = payable(address(0));
+        crowdfundOpts.initialDelegate = payable(address(0));
+        crowdfundOpts.minContribution = MIN_CONTRIBUTION;
+        crowdfundOpts.maxContribution = MAX_CONTRIBUTION;
+        crowdfundOpts.disableContributingForExistingCard = true;
+        crowdfundOpts.minTotalContributions = MIN_CONTRIBUTION;
+        crowdfundOpts.maxTotalContributions = MAX_CONTRIBUTION;
+        crowdfundOpts.exchangeRate = 1000000000000000000;
+        crowdfundOpts.fundingSplitBps = 0;
+        crowdfundOpts.fundingSplitRecipient = payable(options.creator);
+        crowdfundOpts.duration = PARTY_DURATION; // 15 minunutes
+        crowdfundOpts.gateKeeper = IGateKeeper(address(0));
+        crowdfundOpts.gateKeeperId = bytes12(0);
 
         InitialETHCrowdfund.ETHPartyOptions memory partyOpts;
         partyOpts.governanceOpts.partyImpl = partyImpl;
@@ -155,7 +152,7 @@ contract TokenDeployer is Ownable {
         partyFactory = PartyFactory(_partyFactory);
     }
 
-    function setPartyDuration(uint256 _partyDuration) external onlyOwner {
+    function setPartyDuration(uint40 _partyDuration) external onlyOwner {
         require(_partyDuration > 0, "Duration must be greater than 0");
         PARTY_DURATION = _partyDuration;
     }

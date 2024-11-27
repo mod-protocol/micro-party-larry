@@ -49,7 +49,7 @@ contract TokenDeployerTest is Test {
         // Start recording all logs
         vm.recordLogs();
 
-        ERC20LaunchCrowdfund crowdfund = deployer.deploy(options);
+        ERC20LaunchCrowdfund launchCrowdfund = deployer.deploy(options);
 
         // Get all recorded logs
         Vm.Log[] memory entries = vm.getRecordedLogs();
@@ -66,7 +66,7 @@ contract TokenDeployerTest is Test {
             console.logBytes(entries[i].data); // Event data
         }
 
-        assertNotEq(address(crowdfund), address(0x0));
+        assertNotEq(address(launchCrowdfund), address(0x0));
     }
 
     function test_SetMaxContribution() public {
@@ -128,7 +128,7 @@ contract TokenDeployerTest is Test {
     }
 
     function test_SetPartyDuration() public {
-        uint256 newDuration = 7 days;
+        uint40 newDuration = 7 days;
         deployer.setPartyDuration(newDuration);
         assertEq(deployer.PARTY_DURATION(), newDuration);
     }
