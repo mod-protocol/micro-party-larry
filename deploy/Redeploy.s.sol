@@ -5,6 +5,8 @@ import {Script} from "forge-std/Script.sol";
 import {FeeCollectorImpl} from "../src/FeeCollector.sol";
 import {ERC20CreatorV3Impl} from "../src/ERC20CreatorV3.sol";
 import {ERC20LaunchCrowdfundImpl} from "../src/ERC20LaunchCrowdfund.sol";
+import {CrowdfundFactoryImpl} from "../src/CrowdfundFactory.sol";
+import {TokenDistributorImpl} from "../src/TokenDistributor.sol";
 import {IWETH} from "erc20-creator/FeeCollector.sol";
 import {IERC20Creator} from "party-protocol/utils/IERC20Creator.sol";
 import {ITokenDistributor} from "party-protocol/distribution/ITokenDistributor.sol";
@@ -52,26 +54,42 @@ contract MyScript is Script {
         //     uint16 poolFee
         // )
 
+        TokenDistributorImpl tokenDistributor = new TokenDistributorImpl(
+            globals,
+            1743003499
+        );
+
         ERC20CreatorV3Impl erc20CreatorV3 = new ERC20CreatorV3Impl(
-            ITokenDistributor(0x6c7d98079023F05c2B57DFc933fa0903A2C95411),
+            tokenDistributor,
             uniswapV3PositionManager,
             IUniswapV3Factory(0x33128a8fC17869897dcE68Ed026d694621f6FDfD),
             address(feeCollector),
             address(weth),
             deployerWallet,
-            5000,
+            0,
             10000
         );
 
         // constructor(IGlobals globals, IERC20Creator erc20Creator) InitialETHCrowdfund(globals) {
         //     ERC20_CREATOR = erc20Creator;
         // }
-
         ERC20LaunchCrowdfundImpl erc20LaunchCrowdFund = new ERC20LaunchCrowdfundImpl(
                 globals,
                 IERC20Creator(address(erc20CreatorV3))
             );
 
+        CrowdfundFactoryImpl crowdfundFactory = new CrowdfundFactoryImpl();
+
         vm.stopBroadcast();
     }
 }
+
+/**
+
+forge verify-contract \
+    --chain-id 8453 \
+    --watch \
+    --etherscan-api-key 3UM3QPZJ8XAJJE9IXJD5ESUZEDRGGGIKXE \
+    0x52e506B58ef5f60Ae74bD04C9bc37A63863Dfe5d \
+    src/CrowdfundFactory.sol:CrowdfundFactoryImpl
+ */
