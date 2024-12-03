@@ -1,0 +1,146 @@
+diff --git a/contracts/party/PartyGovernance.sol b/contracts/party/PartyGovernance.sol
+index 79b842f..b12356c 100644
+--- a/contracts/party/PartyGovernance.sol
++++ b/contracts/party/PartyGovernance.sol
+@@ -2,7 +2,6 @@
+ pragma solidity 0.8.20;
+ 
+ import { ITokenDistributor } from "../distribution/ITokenDistributor.sol";
+-import { ReadOnlyDelegateCall } from "../utils/ReadOnlyDelegateCall.sol";
+ import { IERC721 } from "../tokens/IERC721.sol";
+ import { IERC20 } from "../tokens/IERC20.sol";
+ import { IERC721Receiver } from "../tokens/IERC721Receiver.sol";
+@@ -24,12 +23,7 @@ import { Party } from "./Party.sol";
+ ///      since it does emit metadata events when distributions are claimed or
+ ///      when a MetadaProvider changes its URI. This decision was made
+ ///      intentionally which is why ERC4906 is not included in `supportsInterface`.
+-abstract contract PartyGovernance is
+-    ProposalStorage,
+-    Implementation,
+-    IERC4906,
+-    ReadOnlyDelegateCall
+-{
++abstract contract PartyGovernance is ProposalStorage, Implementation, IERC4906 {
+     using LibERC20Compat for IERC20;
+     using LibRawResult for bytes;
+     using LibSafeCast for uint256;
+@@ -326,22 +320,22 @@ abstract contract PartyGovernance is
+ 
+     /// @dev Forward all unknown read-only calls to the proposal execution engine.
+     ///      Initial use case is to facilitate eip-1271 signatures.
+-    fallback() external {
+-        bytes4 functionSelector = bytes4(msg.data[0:4]);
+-        if (
+-            functionSelector == ERC1155TokenReceiverBase.onERC1155BatchReceived.selector ||
+-            functionSelector == ERC1155TokenReceiverBase.onERC1155Received.selector ||
+-            functionSelector == IERC721Receiver.onERC721Received.selector
+-        ) {
+-            assembly {
+-                let freeMem := mload(0x40)
+-                mstore(freeMem, functionSelector)
+-                mstore(0x40, add(freeMem, 0x20))
+-                return(freeMem, 0x20)
+-            }
+-        }
+-        _readOnlyDelegateCall(address(_getSharedProposalStorage().engineImpl), msg.data);
+-    }
++    // fallback() external {
++    //     bytes4 functionSelector = bytes4(msg.data[0:4]);
++    //     if (
++    //         functionSelector == ERC1155TokenReceiverBase.onERC1155BatchReceived.selector ||
++    //         functionSelector == ERC1155TokenReceiverBase.onERC1155Received.selector ||
++    //         functionSelector == IERC721Receiver.onERC721Received.selector
++    //     ) {
++    //         assembly {
++    //             let freeMem := mload(0x40)
++    //             mstore(freeMem, functionSelector)
++    //             mstore(0x40, add(freeMem, 0x20))
++    //             return(freeMem, 0x20)
++    //         }
++    //     }
++    //     _readOnlyDelegateCall(address(_getSharedProposalStorage().engineImpl), msg.data);
++    // }
+ 
+     /// @notice Query if a contract implements an interface.
+     /// @param interfaceId The interface identifier, as specified in ERC-165
+diff --git a/contracts/party/PartyGovernanceNFT.sol b/contracts/party/PartyGovernanceNFT.sol
+index fd65531..5db798b 100644
+--- a/contracts/party/PartyGovernanceNFT.sol
++++ b/contracts/party/PartyGovernanceNFT.sol
+@@ -8,7 +8,7 @@ import "../globals/IGlobals.sol";
+ import "../tokens/IERC721.sol";
+ import "../vendor/solmate/ERC721.sol";
+ import "./PartyGovernance.sol";
+-import "../renderers/RendererStorage.sol";
++// import "../renderers/RendererStorage.sol";
+ 
+ /// @notice ERC721 functionality built on top of `PartyGovernance`.
+ abstract contract PartyGovernanceNFT is PartyGovernance, ERC721, IERC2981 {
+@@ -110,10 +110,10 @@ abstract contract PartyGovernanceNFT is PartyGovernance, ERC721, IERC2981 {
+                 isAuthority[authorities[i]] = true;
+             }
+         }
+-        if (customizationPresetId != 0) {
+-            RendererStorage(_GLOBALS.getAddress(LibGlobals.GLOBAL_RENDERER_STORAGE))
+-                .useCustomizationPreset(customizationPresetId);
+-        }
++        // if (customizationPresetId != 0) {
++        //     RendererStorage(_GLOBALS.getAddress(LibGlobals.GLOBAL_RENDERER_STORAGE))
++        //         .useCustomizationPreset(customizationPresetId);
++        // }
+     }
+ 
+     /// @inheritdoc EIP165
+@@ -127,21 +127,21 @@ abstract contract PartyGovernanceNFT is PartyGovernance, ERC721, IERC2981 {
+     }
+ 
+     /// @inheritdoc ERC721
+-    function tokenURI(uint256) public view override returns (string memory) {
+-        _delegateToRenderer();
++    function tokenURI(uint256) public view virtual override returns (string memory) {
++        // _delegateToRenderer();
+         return ""; // Just to make the compiler happy.
+     }
+ 
+     /// @notice Returns a URI for the storefront-level metadata for your contract.
+     function contractURI() external view returns (string memory) {
+-        _delegateToRenderer();
++        // _delegateToRenderer();
+         return ""; // Just to make the compiler happy.
+     }
+ 
+     /// @notice Called with the sale price to determine how much royalty
+     //          is owed and to whom.
+     function royaltyInfo(uint256, uint256) external view returns (address, uint256) {
+-        _delegateToRenderer();
++        // _delegateToRenderer();
+         return (address(0), 0); // Just to make the compiler happy.
+     }
+ 
+@@ -519,12 +519,12 @@ abstract contract PartyGovernanceNFT is PartyGovernance, ERC721, IERC2981 {
+         emit AuthorityRemoved(msg.sender);
+     }
+ 
+-    function _delegateToRenderer() private view {
+-        _readOnlyDelegateCall(
+-            // Instance of IERC721Renderer.
+-            _GLOBALS.getAddress(LibGlobals.GLOBAL_GOVERNANCE_NFT_RENDER_IMPL),
+-            msg.data
+-        );
+-        assert(false); // Will not be reached.
+-    }
++    // function _delegateToRenderer() private view {
++    //     _readOnlyDelegateCall(
++    //         // Instance of IERC721Renderer.
++    //         _GLOBALS.getAddress(LibGlobals.GLOBAL_GOVERNANCE_NFT_RENDER_IMPL),
++    //         msg.data
++    //     );
++    //     assert(false); // Will not be reached.
++    // }
+ }
+diff --git a/lib/erc20-creator b/lib/erc20-creator
+--- a/lib/erc20-creator
++++ b/lib/erc20-creator
+@@ -1 +1 @@
+-Subproject commit d8c179fa596a0deef283c056363faad200e0a891
++Subproject commit d8c179fa596a0deef283c056363faad200e0a891-dirty

@@ -8,6 +8,7 @@ import {ERC20LaunchCrowdfundImpl} from "../src/ERC20LaunchCrowdfund.sol";
 import {CrowdfundFactoryImpl} from "../src/CrowdfundFactory.sol";
 import {TokenDistributorImpl} from "../src/TokenDistributor.sol";
 import {NeynarScoreGateKeeper} from "../src/NeynarScoreGateKeeper.sol";
+import {PartyImpl} from "../src/Party.sol";
 import {IWETH} from "erc20-creator/FeeCollector.sol";
 import {IERC20Creator} from "party-protocol/utils/IERC20Creator.sol";
 import {ITokenDistributor} from "party-protocol/distribution/ITokenDistributor.sol";
@@ -34,57 +35,37 @@ contract MyScript is Script {
             );
         address contributionsRouter = 0xD9F65f0d2135BeE238db9c49558632Eb6030CAa7;
 
-        FeeCollectorImpl feeCollector = new FeeCollectorImpl(
-            uniswapV3PositionManager,
-            payable(deployerWallet),
-            5000,
-            weth
-        );
+        PartyImpl party = new PartyImpl(globals);
 
-        /// @param tokenDistributor PartyDao token distributor contract
-        /// @param uniswapV3PositionManager Uniswap V3 position manager contract
-        /// @param uniswapV3Factory Uniswap V3 factory contract
-        /// @param feeCollector Fee collector address which v3 lp positions are transferred to.
-        /// @param weth WETH address
-        /// @param feeRecipient_ Address that receives fee split of ETH at LP creation
-        /// @param feeBasisPoints_ Fee basis points for ETH split on LP creation
-        /// @param poolFee Uniswap V3 pool fee in hundredths of a bip
-        // constructor(
-        //     ITokenDistributor tokenDistributor,
-        //     INonfungiblePositionManager uniswapV3PositionManager,
-        //     IUniswapV3Factory uniswapV3Factory,
-        //     address feeCollector,
-        //     address weth,
-        //     address feeRecipient_,
-        //     uint16 feeBasisPoints_,
-        //     uint16 poolFee
-        // )
+        // FeeCollectorImpl feeCollector = new FeeCollectorImpl(
+        //     uniswapV3PositionManager,
+        //     payable(deployerWallet),
+        //     5000,
+        //     weth
+        // );
 
-        TokenDistributorImpl tokenDistributor = new TokenDistributorImpl(
-            globals,
-            1743003499
-        );
+        // TokenDistributorImpl tokenDistributor = new TokenDistributorImpl(
+        //     globals,
+        //     1743003499
+        // );
 
-        ERC20CreatorV3Impl erc20CreatorV3 = new ERC20CreatorV3Impl(
-            tokenDistributor,
-            uniswapV3PositionManager,
-            IUniswapV3Factory(0x33128a8fC17869897dcE68Ed026d694621f6FDfD),
-            address(feeCollector),
-            address(weth),
-            deployerWallet,
-            0,
-            10000
-        );
+        // ERC20CreatorV3Impl erc20CreatorV3 = new ERC20CreatorV3Impl(
+        //     tokenDistributor,
+        //     uniswapV3PositionManager,
+        //     IUniswapV3Factory(0x33128a8fC17869897dcE68Ed026d694621f6FDfD),
+        //     address(feeCollector),
+        //     address(weth),
+        //     deployerWallet,
+        //     0,
+        //     10000
+        // );
 
-        // constructor(IGlobals globals, IERC20Creator erc20Creator) InitialETHCrowdfund(globals) {
-        //     ERC20_CREATOR = erc20Creator;
-        // }
-        ERC20LaunchCrowdfundImpl erc20LaunchCrowdFund = new ERC20LaunchCrowdfundImpl(
-                globals,
-                IERC20Creator(address(erc20CreatorV3))
-            );
+        // ERC20LaunchCrowdfundImpl erc20LaunchCrowdFund = new ERC20LaunchCrowdfundImpl(
+        //         globals,
+        //         IERC20Creator(address(erc20CreatorV3))
+        //     );
 
-        CrowdfundFactoryImpl crowdfundFactory = new CrowdfundFactoryImpl();
+        // CrowdfundFactoryImpl crowdfundFactory = new CrowdfundFactoryImpl();
 
         // NeynarScoreGateKeeper neynarScoreGateKeeper = new NeynarScoreGateKeeper(
         //     contributionsRouter,
