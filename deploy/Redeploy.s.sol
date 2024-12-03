@@ -7,12 +7,14 @@ import {ERC20CreatorV3Impl} from "../src/ERC20CreatorV3.sol";
 import {ERC20LaunchCrowdfundImpl} from "../src/ERC20LaunchCrowdfund.sol";
 import {CrowdfundFactoryImpl} from "../src/CrowdfundFactory.sol";
 import {TokenDistributorImpl} from "../src/TokenDistributor.sol";
+import {NeynarScoreGateKeeper} from "../src/NeynarScoreGateKeeper.sol";
 import {IWETH} from "erc20-creator/FeeCollector.sol";
 import {IERC20Creator} from "party-protocol/utils/IERC20Creator.sol";
 import {ITokenDistributor} from "party-protocol/distribution/ITokenDistributor.sol";
 import {INonfungiblePositionManager} from "v3-periphery/interfaces/INonfungiblePositionManager.sol";
 import {IUniswapV3Factory} from "v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import {IGlobals} from "party-protocol/globals/IGlobals.sol";
+import {INeynarUserScoresReader} from "../src/interfaces/INeynarUserScoresReader.sol";
 
 // Meant for deployment on base mainnet
 
@@ -27,6 +29,10 @@ contract MyScript is Script {
                 0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1
             );
         IGlobals globals = IGlobals(0xcEDe25DF327bD1619Fe25CDa2292e14edAC30717);
+        INeynarUserScoresReader neynarUserScoresReader = INeynarUserScoresReader(
+                0xd3C43A38D1D3E47E9c420a733e439B03FAAdebA8
+            );
+        address contributionsRouter = 0xD9F65f0d2135BeE238db9c49558632Eb6030CAa7;
 
         FeeCollectorImpl feeCollector = new FeeCollectorImpl(
             uniswapV3PositionManager,
@@ -79,6 +85,11 @@ contract MyScript is Script {
             );
 
         CrowdfundFactoryImpl crowdfundFactory = new CrowdfundFactoryImpl();
+
+        // NeynarScoreGateKeeper neynarScoreGateKeeper = new NeynarScoreGateKeeper(
+        //     contributionsRouter,
+        //     neynarUserScoresReader
+        // );
 
         vm.stopBroadcast();
     }
