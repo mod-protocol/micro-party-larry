@@ -17,7 +17,7 @@ contract PartyImpl is Party {
     ) public view override returns (string memory) {
         return
             string.concat(
-                "https://roundtrip.wtf/api/metadata",
+                "https://larry.club/api/metadata",
                 "/",
                 address(this).toHexString(),
                 "/",
