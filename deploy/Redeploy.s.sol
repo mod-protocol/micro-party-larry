@@ -35,7 +35,7 @@ contract MyScript is Script {
             );
         address contributionsRouter = 0xD9F65f0d2135BeE238db9c49558632Eb6030CAa7;
 
-        PartyImpl party = new PartyImpl(globals);
+        // PartyImpl party = new PartyImpl(globals);
 
         // FeeCollectorImpl feeCollector = new FeeCollectorImpl(
         //     uniswapV3PositionManager,
@@ -62,7 +62,7 @@ contract MyScript is Script {
 
         // ERC20LaunchCrowdfundImpl erc20LaunchCrowdFund = new ERC20LaunchCrowdfundImpl(
         //         globals,
-        //         IERC20Creator(address(erc20CreatorV3))
+        //         IERC20Creator(0xB3A720f17902b7d2e8c38c5044C3B20e8AC9C27C)
         //     );
 
         // CrowdfundFactoryImpl crowdfundFactory = new CrowdfundFactoryImpl();

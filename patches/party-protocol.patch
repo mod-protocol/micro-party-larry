@@ -1,3 +1,16 @@
+diff --git a/contracts/crowdfund/InitialETHCrowdfund.sol b/contracts/crowdfund/InitialETHCrowdfund.sol
+index 72545e2..fae4e65 100644
+--- a/contracts/crowdfund/InitialETHCrowdfund.sol
++++ b/contracts/crowdfund/InitialETHCrowdfund.sol
+@@ -296,7 +296,7 @@ contract InitialETHCrowdfund is ETHCrowdfundBase {
+         uint96 amount,
+         uint256 tokenId,
+         bytes memory gateData
+-    ) private returns (uint96 votingPower) {
++    ) internal virtual returns (uint96 votingPower) {
+         // Require a non-null delegate.
+         if (delegate == address(0)) {
+             revert InvalidDelegateError();
 diff --git a/contracts/party/PartyGovernance.sol b/contracts/party/PartyGovernance.sol
 index 79b842f..b12356c 100644
 --- a/contracts/party/PartyGovernance.sol
