@@ -1,0 +1,19 @@
+diff --git a/lib/v3-periphery b/lib/v3-periphery
+--- a/lib/v3-periphery
++++ b/lib/v3-periphery
+@@ -1 +1 @@
+-Subproject commit a82c50ebea0705e8e3a05309576329af9fee61ad
++Subproject commit a82c50ebea0705e8e3a05309576329af9fee61ad-dirty
+diff --git a/src/ERC20CreatorV3.sol b/src/ERC20CreatorV3.sol
+index 3789394..2c7cdd4 100644
+--- a/src/ERC20CreatorV3.sol
++++ b/src/ERC20CreatorV3.sol
+@@ -100,7 +100,7 @@ contract ERC20CreatorV3 is IERC721Receiver {
+         int24 tickSpacing = UNISWAP_V3_FACTORY.feeAmountTickSpacing(POOL_FEE);
+         MAX_TICK = (887272 /* TickMath.MAX_TICK */ / tickSpacing) * tickSpacing;
+         MIN_TICK =
+-            (-887272 /* TickMath.MIN_TICK */ / tickSpacing) *
++            (-184200/* TickMath.MIN_TICK */ / tickSpacing) *
+             tickSpacing;
+     }
+ 

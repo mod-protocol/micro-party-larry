@@ -49,21 +49,21 @@ contract MyScript is Script {
         //     1743003499
         // );
 
-        // ERC20CreatorV3Impl erc20CreatorV3 = new ERC20CreatorV3Impl(
-        //     tokenDistributor,
-        //     uniswapV3PositionManager,
-        //     IUniswapV3Factory(0x33128a8fC17869897dcE68Ed026d694621f6FDfD),
-        //     address(feeCollector),
-        //     address(weth),
-        //     deployerWallet,
-        //     0,
-        //     10000
-        // );
+        ERC20CreatorV3Impl erc20CreatorV3 = new ERC20CreatorV3Impl(
+            TokenDistributorImpl(0xc3EF5e6c8cb42C4151859352ACEbE68cf05D8d7d),
+            uniswapV3PositionManager,
+            IUniswapV3Factory(0x33128a8fC17869897dcE68Ed026d694621f6FDfD),
+            address(0x5c8d35469BC6f10E4a5A140Ea4B2Fd670CB62FF5),
+            address(weth),
+            deployerWallet,
+            0,
+            10000
+        );
 
-        // ERC20LaunchCrowdfundImpl erc20LaunchCrowdFund = new ERC20LaunchCrowdfundImpl(
-        //         globals,
-        //         IERC20Creator(0xB3A720f17902b7d2e8c38c5044C3B20e8AC9C27C)
-        //     );
+        ERC20LaunchCrowdfundImpl erc20LaunchCrowdFund = new ERC20LaunchCrowdfundImpl(
+                globals,
+                IERC20Creator(0x5faAb5D52790916ed9c2C159960006151e311bA0)
+            );
 
         // CrowdfundFactoryImpl crowdfundFactory = new CrowdfundFactoryImpl();
 

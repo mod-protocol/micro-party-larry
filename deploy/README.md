@@ -1,5 +1,5 @@
 ```
-forge script --chain base deploy/Redeploy.s.sol --rpc-url $BASE_RPC_URL --broadcast --with-gas-price 44909747
+forge script --chain base deploy/Redeploy.s.sol --rpc-url $BASE_RPC_URL --broadcast --with-gas-price 64909747
 ```
 
 Verify contracts e.g.
