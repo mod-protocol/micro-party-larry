@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 import "../src/ERC20LaunchCrowdfund.sol";
 import {CrowdfundFactoryImpl} from "../src/CrowdfundFactory.sol";
-import {GlobalsMock} from "./mocks/GlobalsMock.sol";
+import {GlobalsMock} from "./mock/GlobalsMock.sol";
 import "party-protocol/globals/IGlobals.sol";
 import "party-protocol/party/Party.sol";
 import {PartyFactory} from "party-protocol/party/PartyFactory.sol";
@@ -136,6 +136,33 @@ contract ERC20LaunchCrowdfundTestForked is Test {
         vm.expectRevert();
         crowdfund.contribute{value: 1 ether}(contributor, "");
 
+        vm.stopPrank();
+    }
+
+    function testCanEarlyRefund() public {
+        uint256 initialBalance = address(contributor).balance;
+
+        vm.startPrank(contributor);
+        crowdfund.contribute{value: 1 ether}(contributor, "");
+        vm.stopPrank();
+
+        assertEq(address(contributor).balance, initialBalance - 1 ether);
+
+        vm.startPrank(contributor);
+        crowdfund.earlyRefund(1);
+        vm.stopPrank();
+
+        assertEq(address(contributor).balance, initialBalance);
+    }
+
+    function testCannotEarlyRefundIfNotOwner() public {
+        vm.startPrank(contributor);
+        crowdfund.contribute{value: 1 ether}(contributor, "");
+        vm.stopPrank();
+
+        vm.startPrank(address(0x4));
+        vm.expectRevert();
+        crowdfund.earlyRefund(1);
         vm.stopPrank();
     }
 }
