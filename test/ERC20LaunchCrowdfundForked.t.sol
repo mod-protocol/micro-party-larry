@@ -9,16 +9,35 @@ import "party-protocol/party/Party.sol";
 import {PartyFactory} from "party-protocol/party/PartyFactory.sol";
 
 contract ERC20LaunchCrowdfundTestForked is Test {
+    struct TokenDistributionConfiguration {
+        uint256 totalSupply; // Total supply of the token
+        uint256 numTokensForDistribution; // Number of tokens to distribute to the party
+        uint256 numTokensForRecipient; // Number of tokens to send to the `tokenRecipient`
+        uint256 numTokensForLP; // Number of tokens for the Uniswap V3 LP
+    }
+
+    event ERC20Created(
+        address indexed token,
+        address indexed party,
+        address indexed recipient,
+        string name,
+        string symbol,
+        uint256 ethValue,
+        TokenDistributionConfiguration config
+    );
+
     ERC20LaunchCrowdfundImpl crowdfund;
     CrowdfundFactoryImpl factory;
     ERC20LaunchCrowdfundImpl launchCrowdfundImpl;
     address mockGlobals;
     address mockERC20Creator;
     address contributor;
+    ERC20LaunchCrowdfund.ERC20LaunchOptions tokenOpts;
 
     function setUp() public {
         // Setup mock contracts and addresses
-        mockERC20Creator = address(0x2);
+
+        mockERC20Creator = address(0x6691fd150746f3d7Deb5e8Be369a3FB9a1235E89);
         contributor = address(0x3);
 
         factory = new CrowdfundFactoryImpl();
@@ -31,7 +50,6 @@ contract ERC20LaunchCrowdfundTestForked is Test {
 
         ERC20LaunchCrowdfund.InitialETHCrowdfundOptions memory crowdfundOpts;
         ERC20LaunchCrowdfund.ETHPartyOptions memory partyOpts;
-        ERC20LaunchCrowdfund.ERC20LaunchOptions memory tokenOpts;
 
         partyOpts.name = "Test Party";
         partyOpts.symbol = "TEST";
@@ -60,11 +78,11 @@ contract ERC20LaunchCrowdfundTestForked is Test {
         tokenOpts.name = "Test ERC20";
         tokenOpts.symbol = "TEST";
         tokenOpts.totalSupply = 1e6 ether;
-        tokenOpts.recipient = address(0);
+        tokenOpts.recipient = address(0x1234);
         tokenOpts.numTokensForDistribution = 5e4 ether;
         tokenOpts.numTokensForRecipient = 5e4 ether;
         tokenOpts.numTokensForLP = 9e5 ether;
-        tokenOpts.lpFeeRecipient = address(0);
+        tokenOpts.lpFeeRecipient = address(0x12345);
 
         crowdfund = ERC20LaunchCrowdfundImpl(
             address(
@@ -138,30 +156,139 @@ contract ERC20LaunchCrowdfundTestForked is Test {
         vm.stopPrank();
     }
 
-    function testCanEarlyRefund() public {
-        uint256 initialBalance = address(contributor).balance;
-
+    function testTokenDistributionUnderTargetMarketCap() public {
         vm.startPrank(contributor);
-        crowdfund.contribute{value: 1 ether}(contributor, "");
+        crowdfund.contribute{value: 1.5 ether}(contributor, "");
         vm.stopPrank();
 
-        assertEq(address(contributor).balance, initialBalance - 1 ether);
+        vm.warp(crowdfund.expiry());
 
-        vm.startPrank(contributor);
-        crowdfund.earlyRefund(1);
-        vm.stopPrank();
+        vm.recordLogs();
+        crowdfund.finalize();
+        Vm.Log[] memory logs = vm.getRecordedLogs();
 
-        assertEq(address(contributor).balance, initialBalance);
+        // Find and verify the ERC20Created event
+        bool foundEvent = false;
+        for (uint256 i = 0; i < logs.length; i++) {
+            // Check if this is the ERC20Created event
+            if (
+                logs[i].topics[0] !=
+                keccak256(
+                    "ERC20Created(address,address,address,string,string,uint256,(uint256,uint256,uint256,uint256))"
+                )
+            ) {
+                continue;
+            }
+
+            // Decode the event data
+            (
+                string memory name,
+                string memory symbol,
+                uint256 ethValue,
+                TokenDistributionConfiguration memory config
+            ) = abi.decode(
+                    logs[i].data,
+                    (string, string, uint256, TokenDistributionConfiguration)
+                );
+
+            // Verify the configuration values
+            assertEq(
+                config.totalSupply,
+                1_000_000 * 1e18,
+                "Incorrect totalSupply"
+            );
+            assertEq(
+                config.numTokensForDistribution,
+                25_000 * 1e18,
+                "Incorrect numTokensForDistribution"
+            );
+            assertEq(
+                config.numTokensForRecipient,
+                50_000 * 1e18,
+                "Incorrect numTokensForRecipient"
+            );
+            assertApproxEqAbs(
+                config.numTokensForLP,
+                925_000 * 1e18,
+                200,
+                "Incorrect numTokensForLP"
+            );
+
+            foundEvent = true;
+            break;
+        }
+
+        assertTrue(foundEvent, "ERC20Created event not found");
     }
 
-    function testCannotEarlyRefundIfNotOwner() public {
+    function testTokenDistributionOverTargetMarketCap() public {
+        // Contribute more than 3 ETH
         vm.startPrank(contributor);
-        crowdfund.contribute{value: 1 ether}(contributor, "");
+        crowdfund.contribute{value: 2 ether}(contributor, "");
         vm.stopPrank();
 
-        vm.startPrank(address(0x4));
-        vm.expectRevert();
-        crowdfund.earlyRefund(1);
+        vm.deal(address(0x10), 10 ether);
+        vm.startPrank(address(0x10));
+        crowdfund.contribute{value: 2 ether}(address(0x10), "");
         vm.stopPrank();
+
+        vm.warp(crowdfund.expiry());
+
+        vm.recordLogs();
+        crowdfund.finalize();
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+
+        // Find and verify the ERC20Created event
+        bool foundEvent = false;
+        for (uint256 i = 0; i < logs.length; i++) {
+            // Check if this is the ERC20Created event
+            if (
+                logs[i].topics[0] !=
+                keccak256(
+                    "ERC20Created(address,address,address,string,string,uint256,(uint256,uint256,uint256,uint256))"
+                )
+            ) {
+                continue;
+            }
+
+            // Decode the event data
+            (
+                string memory name,
+                string memory symbol,
+                uint256 ethValue,
+                TokenDistributionConfiguration memory config
+            ) = abi.decode(
+                    logs[i].data,
+                    (string, string, uint256, TokenDistributionConfiguration)
+                );
+
+            // Verify the configuration values match the original amounts
+            assertEq(
+                config.totalSupply,
+                tokenOpts.totalSupply,
+                "Incorrect totalSupply"
+            );
+            assertEq(
+                config.numTokensForDistribution,
+                tokenOpts.numTokensForDistribution,
+                "Incorrect numTokensForDistribution"
+            );
+            assertEq(
+                config.numTokensForRecipient,
+                tokenOpts.numTokensForRecipient,
+                "Incorrect numTokensForRecipient"
+            );
+
+            assertApproxEqAbs(
+                config.numTokensForLP,
+                tokenOpts.numTokensForLP,
+                200
+            );
+
+            foundEvent = true;
+            break;
+        }
+
+        assertTrue(foundEvent, "ERC20Created event not found");
     }
 }

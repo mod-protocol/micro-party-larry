@@ -15,3 +15,4 @@ forge verify-contract \
 
 Add `--via-ir --optimize --optimizer-runs 0 --evm-version paris` for Party implementation.
 
+

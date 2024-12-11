@@ -1,3 +1,16 @@
+diff --git a/contracts/crowdfund/ERC20LaunchCrowdfund.sol b/contracts/crowdfund/ERC20LaunchCrowdfund.sol
+index 0c604c4..96edda1 100644
+--- a/contracts/crowdfund/ERC20LaunchCrowdfund.sol
++++ b/contracts/crowdfund/ERC20LaunchCrowdfund.sol
+@@ -90,7 +90,7 @@ contract ERC20LaunchCrowdfund is InitialETHCrowdfund {
+     }
+ 
+     /// @notice Launch the ERC20 token for the Party.
+-    function launchToken() public returns (ERC20 token) {
++    function launchToken() public virtual returns (ERC20 token) {
+         if (isTokenLaunched) revert TokenAlreadyLaunched();
+ 
+         CrowdfundLifecycle lc = getCrowdfundLifecycle();
 diff --git a/contracts/crowdfund/InitialETHCrowdfund.sol b/contracts/crowdfund/InitialETHCrowdfund.sol
 index 72545e2..fae4e65 100644
 --- a/contracts/crowdfund/InitialETHCrowdfund.sol
