@@ -4,7 +4,6 @@ pragma solidity 0.8.20;
 import {IGateKeeper} from "party-protocol/contracts/gatekeepers/IGateKeeper.sol";
 import {IContributionRouter} from "./interfaces/IContributionRouter.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-import "forge-std/console.sol";
 
 /// @notice A gateKeeper that implements a simple allow list per gate.
 contract OffchainAuthorityGateKeeper is IGateKeeper {

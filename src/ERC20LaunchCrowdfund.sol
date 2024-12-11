@@ -14,6 +14,12 @@ contract ERC20LaunchCrowdfundImpl is ERC20LaunchCrowdfund {
     error ContributorAlreadyHasPartyCardError();
     error ContributionWouldExceedMaxVotingPowerError();
 
+    event RefundedEarly(
+        address indexed contributor,
+        uint256 tokenId,
+        uint96 amount
+    );
+
     constructor(
         IGlobals globals,
         IERC20Creator erc20Creator
@@ -82,7 +88,7 @@ contract ERC20LaunchCrowdfundImpl is ERC20LaunchCrowdfund {
             // Refund contributor.
             contributor.transferEth(amount);
 
-            emit Refunded(contributor, tokenId, amount);
+            emit RefundedEarly(contributor, tokenId, amount);
         }
     }
 }

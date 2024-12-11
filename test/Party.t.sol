@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
 import "../src/Party.sol";
-import {GlobalsMock} from "./mocks/GlobalsMock.sol";
+import {GlobalsMock} from "./mock/GlobalsMock.sol";
 import "party-protocol/globals/IGlobals.sol";
 import {Strings} from "party-protocol/contracts/utils/vendor/Strings.sol";
 
