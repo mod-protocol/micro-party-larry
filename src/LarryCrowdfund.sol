@@ -6,10 +6,15 @@ import {IGlobals} from "party-protocol/globals/IGlobals.sol";
 import {IERC20Creator, TokenConfiguration} from "party-protocol/utils/IERC20Creator.sol";
 import {LibSafeCast} from "party-protocol/utils/LibSafeCast.sol";
 import {LibAddress} from "party-protocol/utils/LibAddress.sol";
+import {MetadataProvider} from "party-protocol/renderers/MetadataProvider.sol";
 
-contract ERC20LaunchCrowdfundImpl is ERC20LaunchCrowdfund {
+contract LarryCrowdfund is ERC20LaunchCrowdfund {
     using LibSafeCast for uint256;
     using LibAddress for address payable;
+
+    event MetadataURISet(string indexed metadataURI);
+
+    string public metadataURI;
 
     error ContributorAlreadyHasPartyCardError();
     error ContributionWouldExceedMaxVotingPowerError();
@@ -18,6 +23,30 @@ contract ERC20LaunchCrowdfundImpl is ERC20LaunchCrowdfund {
         IGlobals globals,
         IERC20Creator erc20Creator
     ) ERC20LaunchCrowdfund(globals, erc20Creator) {}
+
+    /// @inheritdoc ERC20LaunchCrowdfund
+    function initialize(
+        InitialETHCrowdfundOptions memory crowdfundOpts,
+        ETHPartyOptions memory partyOpts,
+        ERC20LaunchOptions memory _tokenOpts,
+        MetadataProvider customMetadataProvider,
+        bytes memory customMetadata
+    ) public payable override {
+        super.initialize(
+            crowdfundOpts,
+            partyOpts,
+            _tokenOpts,
+            customMetadataProvider,
+            customMetadata
+        );
+        if (
+            address(customMetadataProvider) == address(0) &&
+            bytes(customMetadata).length > 0
+        ) {
+            metadataURI = string(customMetadata);
+            emit MetadataURISet(metadataURI);
+        }
+    }
 
     /// @notice Launch the ERC20 token for the Party.
     function launchToken() public override returns (ERC20 token) {
@@ -99,6 +128,7 @@ contract ERC20LaunchCrowdfundImpl is ERC20LaunchCrowdfund {
         uint256 tokenId,
         bytes memory gateData
     ) internal override returns (uint96 votingPower) {
+        // Prevent contributor from contributing more than maxContribution
         if (tokenId == 0) {
             uint256 balance = party.balanceOf(contributor);
             if (balance > 0) {

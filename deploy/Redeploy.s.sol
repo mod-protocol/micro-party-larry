@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Script} from "forge-std/Script.sol";
 import {FeeCollectorImpl} from "../src/FeeCollector.sol";
 import {ERC20CreatorV3Impl} from "../src/ERC20CreatorV3.sol";
-import {ERC20LaunchCrowdfundImpl} from "../src/ERC20LaunchCrowdfund.sol";
+import {LarryCrowdfund} from "../src/LarryCrowdfund.sol";
 import {CrowdfundFactoryImpl} from "../src/CrowdfundFactory.sol";
 import {TokenDistributorImpl} from "../src/TokenDistributor.sol";
 import {NeynarScoreGateKeeper} from "../src/NeynarScoreGateKeeper.sol";
@@ -61,12 +61,10 @@ contract MyScript is Script {
         //     10000
         // );
 
-        ERC20LaunchCrowdfundImpl erc20LaunchCrowdFund = new ERC20LaunchCrowdfundImpl(
-                globals,
-                IERC20Creator(
-                    address(0x6691fd150746f3d7Deb5e8Be369a3FB9a1235E89)
-                )
-            );
+        LarryCrowdfund erc20LaunchCrowdFund = new LarryCrowdfund(
+            globals,
+            IERC20Creator(address(0x6691fd150746f3d7Deb5e8Be369a3FB9a1235E89))
+        );
 
         // CrowdfundFactoryImpl crowdfundFactory = new CrowdfundFactoryImpl();
 

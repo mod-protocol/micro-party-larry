@@ -2,13 +2,14 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "../src/ERC20LaunchCrowdfund.sol";
+import "../src/LarryCrowdfund.sol";
 import {CrowdfundFactoryImpl} from "../src/CrowdfundFactory.sol";
 import "party-protocol/globals/IGlobals.sol";
 import "party-protocol/party/Party.sol";
 import {PartyFactory} from "party-protocol/party/PartyFactory.sol";
+import {MetadataProvider} from "party-protocol/renderers/MetadataProvider.sol";
 
-contract ERC20LaunchCrowdfundTestForked is Test {
+contract LarryCrowdfundTestForked is Test {
     struct TokenDistributionConfiguration {
         uint256 totalSupply; // Total supply of the token
         uint256 numTokensForDistribution; // Number of tokens to distribute to the party
@@ -26,9 +27,11 @@ contract ERC20LaunchCrowdfundTestForked is Test {
         TokenDistributionConfiguration config
     );
 
-    ERC20LaunchCrowdfundImpl crowdfund;
+    event MetadataURISet(string indexed metadataURI);
+
+    LarryCrowdfund crowdfund;
     CrowdfundFactoryImpl factory;
-    ERC20LaunchCrowdfundImpl launchCrowdfundImpl;
+    LarryCrowdfund launchCrowdfundImpl;
     address mockGlobals;
     address mockERC20Creator;
     address contributor;
@@ -43,7 +46,7 @@ contract ERC20LaunchCrowdfundTestForked is Test {
         factory = new CrowdfundFactoryImpl();
 
         // Deploy crowdfund implementation contract
-        launchCrowdfundImpl = new ERC20LaunchCrowdfundImpl(
+        launchCrowdfundImpl = new LarryCrowdfund(
             IGlobals(0xcEDe25DF327bD1619Fe25CDa2292e14edAC30717),
             IERC20Creator(mockERC20Creator)
         );
@@ -84,7 +87,7 @@ contract ERC20LaunchCrowdfundTestForked is Test {
         tokenOpts.numTokensForLP = 9e5 ether;
         tokenOpts.lpFeeRecipient = address(0x12345);
 
-        crowdfund = ERC20LaunchCrowdfundImpl(
+        crowdfund = LarryCrowdfund(
             address(
                 factory.createERC20LaunchCrowdfund(
                     launchCrowdfundImpl,
@@ -109,9 +112,7 @@ contract ERC20LaunchCrowdfundTestForked is Test {
         // Attempt second contribution should revert
         vm.startPrank(contributor);
         vm.expectRevert(
-            ERC20LaunchCrowdfundImpl
-                .ContributorAlreadyHasPartyCardError
-                .selector
+            LarryCrowdfund.ContributorAlreadyHasPartyCardError.selector
         );
         crowdfund.contribute{value: 1 ether}(contributor, "");
         vm.stopPrank();
@@ -290,5 +291,63 @@ contract ERC20LaunchCrowdfundTestForked is Test {
         }
 
         assertTrue(foundEvent, "ERC20Created event not found");
+    }
+
+    function testContextMetadata() public {
+        // Create crowdfund with context metadata
+        ERC20LaunchCrowdfund.InitialETHCrowdfundOptions memory crowdfundOpts;
+        ERC20LaunchCrowdfund.ETHPartyOptions memory partyOpts;
+
+        partyOpts.name = "Test Party";
+        partyOpts.symbol = "TEST";
+        partyOpts.governanceOpts.partyImpl = Party(
+            payable(0xE34b1b97DdE54DCB82ECa18317025f8e5fBB40Aa)
+        );
+        partyOpts.governanceOpts.partyFactory = PartyFactory(
+            0x68e9fC0e4D7af69Ba64dD6827BFcE5CD230b8F3d
+        );
+        partyOpts.governanceOpts.voteDuration = 7 days;
+        partyOpts.governanceOpts.executionDelay = 1 days;
+        partyOpts.governanceOpts.passThresholdBps = 0.5e4;
+        partyOpts.governanceOpts.hosts = new address[](1);
+        partyOpts.governanceOpts.hosts[0] = address(this);
+
+        crowdfundOpts.maxTotalContributions = 10 ether;
+        crowdfundOpts.minTotalContributions = 0.001 ether;
+        crowdfundOpts.exchangeRate = 1 ether;
+        crowdfundOpts.minContribution = 0.001 ether;
+        crowdfundOpts.maxContribution = 2 ether;
+        crowdfundOpts.duration = 1 days;
+        crowdfundOpts.fundingSplitRecipient = payable(address(this));
+        crowdfundOpts.fundingSplitBps = 0.1e4;
+        crowdfundOpts.disableContributingForExistingCard = false;
+
+        tokenOpts.name = "Test ERC20";
+        tokenOpts.symbol = "TEST";
+        tokenOpts.totalSupply = 1e6 ether;
+        tokenOpts.recipient = address(0x1234);
+        tokenOpts.numTokensForDistribution = 5e4 ether;
+        tokenOpts.numTokensForRecipient = 5e4 ether;
+        tokenOpts.numTokensForLP = 9e5 ether;
+        tokenOpts.lpFeeRecipient = address(0x12345);
+
+        vm.expectEmit(true, false, false, false);
+        emit MetadataURISet("test metadata");
+
+        LarryCrowdfund testCrowdfund = LarryCrowdfund(
+            address(
+                factory.createERC20LaunchCrowdfundWithMetadata(
+                    launchCrowdfundImpl,
+                    crowdfundOpts,
+                    partyOpts,
+                    tokenOpts,
+                    MetadataProvider(address(0)),
+                    "test metadata",
+                    ""
+                )
+            )
+        );
+
+        assertEq(testCrowdfund.metadataURI(), "test metadata");
     }
 }

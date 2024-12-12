@@ -1,7 +1,16 @@
 diff --git a/contracts/crowdfund/ERC20LaunchCrowdfund.sol b/contracts/crowdfund/ERC20LaunchCrowdfund.sol
-index 0c604c4..96edda1 100644
+index 0c604c4..4643249 100644
 --- a/contracts/crowdfund/ERC20LaunchCrowdfund.sol
 +++ b/contracts/crowdfund/ERC20LaunchCrowdfund.sol
+@@ -58,7 +58,7 @@ contract ERC20LaunchCrowdfund is InitialETHCrowdfund {
+         ERC20LaunchOptions memory _tokenOpts,
+         MetadataProvider customMetadataProvider,
+         bytes memory customMetadata
+-    ) external payable {
++    ) public payable virtual {
+         uint16 feeBasisPoints = 5e3; // Max possible fee
+         uint256 minTotalSpendableEth = ((((uint256(crowdfundOpts.minTotalContributions) *
+             (1e4 - crowdfundOpts.fundingSplitBps)) / 1e4) * (1e4 - feeBasisPoints)) / 1e4);
 @@ -90,7 +90,7 @@ contract ERC20LaunchCrowdfund is InitialETHCrowdfund {
      }
  
